@@ -1,4 +1,4 @@
-import * as ffprobe from '@ffprobe-installer/ffprobe'
+// import * as ffprobe from '@ffprobe-installer/ffprobe'
 
 import * as execa from 'execa'
 import * as isStream from 'is-stream'
@@ -6,11 +6,11 @@ import { Readable } from 'stream'
 
 const getFFprobeWrappedExecution = (
   input: string | Readable,
-  ffprobePath?: string
+  ffprobePath: string
 ): execa.ExecaChildProcess => {
   const params = ['-v', 'error', '-show_format', '-show_streams']
 
-  const overridenPath = ffprobePath || ffprobe.path
+  const overridenPath = ffprobePath
 
   if (typeof input === 'string') {
     return execa(overridenPath, [...params, input])
@@ -44,7 +44,10 @@ const getVideoDurationInSeconds = async (
   input: string | Readable,
   ffprobePath?: string
 ): Promise<number> => {
-  const { stdout } = await getFFprobeWrappedExecution(input, ffprobePath)
+  const { stdout } = await getFFprobeWrappedExecution(
+    input,
+    ffprobePath ?? (await import('@ffprobe-installer/ffprobe')).path
+  )
   const matched = stdout.match(/duration="?(\d*\.\d*)"?/)
   if (matched && matched[1]) return parseFloat(matched[1])
   throw new Error('No duration found!')
